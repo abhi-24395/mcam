@@ -9,23 +9,42 @@ const io = socketIO(server);
 
 app.use(express.static(path.join(__dirname, 'public')));
 
+let connections = {};
+
 io.on('connection', (socket) => {
   console.log('a user connected');
-  
-  socket.on('offer', (offer) => {
-    socket.broadcast.emit('offer', offer);
+
+  socket.on('register', (role) => {
+    if (role === 'receiver') {
+      connections[socket.id] = { socket, peers: [] };
+    } else if (role === 'sender') {
+      for (let id in connections) {
+        connections[id].peers.push(socket.id);
+      }
+    }
   });
-  
-  socket.on('answer', (answer) => {
-    socket.broadcast.emit('answer', answer);
+
+  socket.on('offer', (data) => {
+    const { offer, receiverId } = data;
+    io.to(receiverId).emit('offer', { offer, senderId: socket.id });
   });
-  
-  socket.on('candidate', (candidate) => {
-    socket.broadcast.emit('candidate', candidate);
+
+  socket.on('answer', (data) => {
+    const { answer, senderId } = data;
+    io.to(senderId).emit('answer', { answer, receiverId: socket.id });
+  });
+
+  socket.on('candidate', (data) => {
+    const { candidate, targetId } = data;
+    io.to(targetId).emit('candidate', { candidate, senderId: socket.id });
   });
 
   socket.on('disconnect', () => {
     console.log('user disconnected');
+    delete connections[socket.id];
+    for (let id in connections) {
+      connections[id].peers = connections[id].peers.filter(peerId => peerId !== socket.id);
+    }
   });
 });
 

@@ -3,12 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mobile Camera Stream</title>
+  <title>Multi Device Camera Stream</title>
 </head>
 <body>
-  <h1>Mobile Camera Stream</h1>
-  <video id="localVideo" autoplay muted></video>
-  <video id="remoteVideo" autoplay></video>
+  <h1>Multi Device Camera Stream</h1>
+  <div>
+    <button id="startSender">Start Sender</button>
+    <button id="startReceiver">Start Receiver</button>
+  </div>
+  <div id="videoContainer"></div>
 
   <script src="/socket.io/socket.io.js"></script>
   <script src="main.js"></script>
